@@ -18,7 +18,8 @@ import {
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/utils";
 import EmberArray, {
-  addArrayObserver
+  addArrayObserver,
+  objectAt
 } from "ember-runtime/mixins/array";
 import { typeOf } from "ember-metal/utils";
 
@@ -359,7 +360,7 @@ var CollectionView = ContainerView.extend({
       itemViewClass = readViewFactory(itemViewClass, this.container);
 
       for (idx = start; idx < start+added; idx++) {
-        item = content.objectAt(idx);
+        item = objectAt(content, idx);
         itemViewProps._context = this.keyword ? this.get('context') : item;
         itemViewProps.content = item;
         itemViewProps.contentIndex = idx;

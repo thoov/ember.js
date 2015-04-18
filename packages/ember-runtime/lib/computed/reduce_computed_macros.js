@@ -20,6 +20,7 @@ import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import SubArray from 'ember-runtime/system/subarray';
 import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 var a_slice = [].slice;
 
@@ -597,7 +598,7 @@ function binarySearch(array, item, low, high) {
   }
 
   mid = low + Math.floor((high - low) / 2);
-  midItem = array.objectAt(mid);
+  midItem = objectAt(array, mid);
 
   guidMid = guidFor(midItem);
   guidItem = guidFor(item);

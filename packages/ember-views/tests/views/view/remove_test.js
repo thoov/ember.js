@@ -4,6 +4,7 @@ import { indexOf } from "ember-metal/enumerable_utils";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import { objectAt } from "ember-runtime/mixins/array";
 
 // .......................................................
 // removeChild()
@@ -15,7 +16,7 @@ QUnit.module("View#removeChild", {
     expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
     parentView = ContainerView.create({ childViews: [View] });
-    child = get(parentView, 'childViews').objectAt(0);
+    child = objectAt(get(parentView, 'childViews'), 0);
   },
   teardown() {
     run(function() {
@@ -90,7 +91,7 @@ QUnit.test("removes view from parent view", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });
-  child = get(parentView, 'childViews').objectAt(0);
+  child = objectAt(get(parentView, 'childViews'), 0);
   ok(get(child, 'parentView'), 'precond - has parentView');
 
   run(function() {
@@ -112,7 +113,7 @@ QUnit.test("returns receiver", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   parentView = ContainerView.create({ childViews: [View] });
-  child = get(parentView, 'childViews').objectAt(0);
+  child = objectAt(get(parentView, 'childViews'), 0);
   var removed = run(function() {
     return child.removeFromParent();
   });

@@ -5,6 +5,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import compile from "ember-template-compiler/system/compile";
 import _MetamorphView from "ember-views/views/metamorph_view";
+import { objectAt } from "ember-runtime/mixins/array";
 
 var view, childView, metamorphView;
 
@@ -55,7 +56,7 @@ QUnit.test("a Metamorph view is not a view's parentView", function() {
   var children = get(view, 'childViews');
 
   equal(get(children, 'length'), 1, "precond - there is only one child of the main node");
-  equal(children.objectAt(0), childView, "... and it is not the metamorph");
+  equal(objectAt(children, 0), childView, "... and it is not the metamorph");
 });
 
 QUnit.module("Metamorph views correctly handle DOM", {

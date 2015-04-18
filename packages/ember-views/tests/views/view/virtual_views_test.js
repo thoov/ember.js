@@ -2,6 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
+import { objectAt } from "ember-runtime/mixins/array";
 
 var rootView, childView;
 
@@ -51,7 +52,7 @@ QUnit.test("a virtual view does not appear as a view's parentView", function() {
   var children = get(rootView, 'childViews');
 
   equal(get(children, 'length'), 1, "there is one child element");
-  equal(children.objectAt(0), childView, "the child element skips through the virtual view");
+  equal(objectAt(children, 0), childView, "the child element skips through the virtual view");
 });
 
 QUnit.test("when a virtual view's child views change, the parent's childViews should reflect", function() {

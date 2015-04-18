@@ -4,6 +4,7 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import compile from "ember-template-compiler/system/compile";
+import { objectAt } from "ember-runtime/mixins/array";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
@@ -185,7 +186,7 @@ QUnit.test("view should be notified after isVisible is set to true and the eleme
 
 QUnit.test("if a view descends from a hidden view, making isVisible true should not trigger becameVisible", function() {
   view = View.create({ isVisible: true });
-  var childView = view.get('childViews').objectAt(0);
+  var childView = objectAt(view.get('childViews'), 0);
 
   run(function() {
     view.append();
@@ -214,7 +215,7 @@ QUnit.test("if a view descends from a hidden view, making isVisible true should 
 
 QUnit.test("if a child view becomes visible while its parent is hidden, if its parent later becomes visible, it receives a becameVisible callback", function() {
   view = View.create({ isVisible: false });
-  var childView = view.get('childViews').objectAt(0);
+  var childView = objectAt(view.get('childViews'), 0);
 
   run(function() {
     view.append();

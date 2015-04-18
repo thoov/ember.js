@@ -13,6 +13,7 @@ import jQuery from "ember-views/system/jquery";
 import { computed } from "ember-metal/computed";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import compile from "ember-template-compiler/system/compile";
+import { objectAt } from "ember-runtime/mixins/array";
 
 var trim = jQuery.trim;
 
@@ -24,13 +25,13 @@ var TemplateTests, registry, container, lookup;
 
 
 function nthChild(view, nth) {
-  return get(view, 'childViews').objectAt(nth || 0);
+  return objectAt(get(view, 'childViews'), nth || 0);
 }
 
 var firstChild = nthChild;
 
 function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+  return objectAt(get(objectAt(get(view, 'childViews'), 0), 'childViews'), 0);
 }
 
 QUnit.module("collection helper", {

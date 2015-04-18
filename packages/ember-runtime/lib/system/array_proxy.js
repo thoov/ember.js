@@ -20,8 +20,13 @@ import { fmt } from "ember-runtime/system/string";
 import alias from "ember-metal/alias";
 import {
   addArrayObserver,
-  removeArrayObserver
+  removeArrayObserver,
+  objectAt
 } from "ember-runtime/mixins/array";
+
+import {
+  indexOf
+} from "ember-metal/enumerable_utils";
 
 /**
 @module ember
@@ -103,7 +108,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @return {Object} the value or undefined if none found
   */
   objectAtContent(idx) {
-    return get(this, 'arrangedContent').objectAt(idx);
+    return objectAt(get(this, 'arrangedContent'), idx);
   },
 
   /**
@@ -314,7 +319,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       // Get a list of indices in original content to remove
       for (i=start; i<start+len; i++) {
         // Use arrangedContent here so we avoid confusion with objects transformed by objectAtContent
-        indices.push(content.indexOf(arrangedContent.objectAt(i)));
+        indices.push(indexOf(content, (objectAt(arrangedContent, i))));
       }
 
       // Replace in reverse order since indices will change

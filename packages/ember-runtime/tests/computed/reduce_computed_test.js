@@ -18,6 +18,7 @@ import { arrayComputed } from "ember-runtime/computed/array_computed";
 import { reduceComputed } from "ember-runtime/computed/reduce_computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SubArray from "ember-runtime/system/subarray";
+import { objectAt } from "ember-runtime/mixins/array";
 
 var obj, addCalls, removeCalls, callbackItems, shared;
 
@@ -154,7 +155,7 @@ QUnit.test("after first retrieval, array computed properties can observe propert
   deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
 
   run(function() {
-    nestedNumbers.objectAt(0).set('v', 22);
+    objectAt(nestedNumbers, 0).set('v', 22);
   });
 
   deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
@@ -168,7 +169,7 @@ QUnit.test("changes to array computed properties happen synchronously", function
   deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
 
   run(function() {
-    nestedNumbers.objectAt(0).set('v', 22);
+    objectAt(nestedNumbers, 0).set('v', 22);
     deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
     deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
   });
@@ -611,7 +612,7 @@ QUnit.test("@this can be used to treat the object as the array itself", function
   deepEqual(names, ['a', 'b'], "precond - names is initially correct");
 
   run(function() {
-    obj.objectAt(1).set('name', 'c');
+    objectAt(obj, 1).set('name', 'c');
   });
 
   deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
@@ -684,7 +685,7 @@ QUnit.test("changeMeta includes item and index", function() {
 
   // remove0 add0
   run(function() {
-    items.objectAt(0).set('n', "zero''");
+    objectAt(items, 0).set('n', "zero''");
   });
 
   expected = expected.concat(['add:2:five', 'add:3:six', "remove:0:zero''", "add:0:zero''"]);
@@ -693,7 +694,7 @@ QUnit.test("changeMeta includes item and index", function() {
   // [zero'', one, five, six] -> [zero'', five, six]
   // remove1
   run(function() {
-    item = items.objectAt(1);
+    item = objectAt(items, 1);
     items.removeAt(1, 1);
   });
 
@@ -705,7 +706,7 @@ QUnit.test("changeMeta includes item and index", function() {
   // [zero'', five, six] -> [zero'', five, seven]
   // remove2 add2
   run(function() {
-    items.objectAt(2).set('n', "seven");
+    objectAt(items, 2).set('n', "seven");
   });
 
   // observer should have been added to the new item
@@ -714,7 +715,7 @@ QUnit.test("changeMeta includes item and index", function() {
 
   // reset (does not call remove)
   run(function() {
-    item = items.objectAt(1);
+    item = objectAt(items, 1);
     set(obj, 'items', Ember.A([]));
   });
 
