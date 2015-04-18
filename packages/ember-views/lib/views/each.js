@@ -100,7 +100,7 @@ export default CollectionView.extend(_Metamorph, {
   },
 
   destroy() {
-    if (!this._super.apply(this, arguments)) { return; }
+    if (!this._super(...arguments)) { return; }
 
     if (this._arrayController) {
       this._arrayController.destroy();
