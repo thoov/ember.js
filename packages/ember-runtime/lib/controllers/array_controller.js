@@ -186,7 +186,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     if (subControllers.length) {
       var subControllersToRemove = subControllers.slice(idx, idx + removedCnt);
 
-      forEach(subControllersToRemove, function(subController) {
+      forEach(subControllersToRemove, (subController) => {
         if (subController) {
           subController.destroy();
         }

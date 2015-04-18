@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import { objectAt } from "ember-runtime/mixins/array";
 
@@ -54,8 +54,8 @@ QUnit.test("indexOf - returns index of object in arrangedContent", function() {
 });
 
 QUnit.test("insertAt - raises, indeterminate behavior", function() {
-  throws(function() {
-    run(function() { array.insertAt(2, 3); });
+  throws(() => {
+    run(() => array.insertAt(2, 3));
   });
 });
 
