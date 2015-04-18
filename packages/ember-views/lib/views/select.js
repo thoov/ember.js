@@ -43,7 +43,7 @@ var SelectOption = View.extend({
     this._super(...arguments);
   },
 
-  selected: computed(function() {
+  selected: computed('content', 'parentView.selection', function() {
     var value = get(this, 'value');
     var selection = get(this, 'parentView.selection');
     if (get(this, 'parentView.multiple')) {
@@ -53,7 +53,7 @@ var SelectOption = View.extend({
       // `new Number(4) !== 4`, we use `==` below
       return value === get(this, 'parentView.value');
     }
-  }).property('content', 'parentView.selection'),
+  }),
 
   labelPathDidChange: observer('parentView.optionLabelPath', function() {
     var labelPath = get(this, 'parentView.optionLabelPath');
