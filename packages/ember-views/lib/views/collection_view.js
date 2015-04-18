@@ -20,6 +20,7 @@ import { readViewFactory } from "ember-views/streams/utils";
 import EmberArray, {
   addArrayObserver
 } from "ember-runtime/mixins/array";
+import { typeOf } from "ember-metal/utils";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -275,7 +276,9 @@ var CollectionView = ContainerView.extend({
     @method _assertArrayLike
   */
   _assertArrayLike(content) {
-    Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), EmberArray.detect(content));
+    Ember.assert(`an Ember.CollectionView's content must implement Ember.Array. You passed ${content}`,
+                 EmberArray.detect(content) ||
+                 typeOf(content) === 'array');
   },
 
   /**

@@ -7,6 +7,7 @@ import { Binding } from "ember-metal/binding";
 import ControllerMixin from "ember-runtime/mixins/controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberArray from "ember-runtime/mixins/array";
+import { typeOf } from "ember-metal/utils";
 
 import {
   addObserver,
@@ -63,7 +64,7 @@ export default CollectionView.extend(_Metamorph, {
                      [(ControllerMixin.detect(content) &&
                        content.get('model') !== undefined) ?
                        fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]),
-                     EmberArray.detect(content));
+                     EmberArray.detect(content) || typeOf(content) === 'array');
   },
 
   disableContentObservers(callback) {
