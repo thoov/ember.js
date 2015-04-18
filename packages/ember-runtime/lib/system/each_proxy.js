@@ -12,7 +12,9 @@ import {
 } from "ember-metal/utils";
 import { forEach } from "ember-metal/enumerable_utils";
 import { indexOf } from "ember-metal/array";
-import EmberArray from "ember-runtime/mixins/array"; // ES6TODO: WAT? Circular dep?
+import EmberArray, {
+  addArrayObserver
+} from "ember-runtime/mixins/array"; // ES6TODO: WAT? Circular dep?
 import EmberObject from "ember-runtime/system/object";
 import { computed } from "ember-metal/computed";
 import {
@@ -111,13 +113,11 @@ var EachProxy = EmberObject.extend({
   init(content) {
     this._super(...arguments);
     this._content = content;
-    content.addArrayObserver(this);
+    addArrayObserver(content, this);
 
     // in case someone is already observing some keys make sure they are
     // added
-    forEach(watchedEvents(this), function(eventName) {
-      this.didAddListener(eventName);
-    }, this);
+    forEach(watchedEvents(this), this.didAddListener, this);
   },
 
   /**

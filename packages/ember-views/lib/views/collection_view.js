@@ -17,7 +17,9 @@ import {
   beforeObserver
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/utils";
-import EmberArray from "ember-runtime/mixins/array";
+import EmberArray, {
+  addArrayObserver
+} from "ember-runtime/mixins/array";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -259,7 +261,7 @@ var CollectionView = ContainerView.extend({
 
     if (content) {
       this._assertArrayLike(content);
-      content.addArrayObserver(this);
+      addArrayObserver(content, this);
     }
 
     var len = content ? get(content, 'length') : 0;
