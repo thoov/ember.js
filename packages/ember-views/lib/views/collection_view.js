@@ -8,7 +8,6 @@ import Ember from "ember-metal/core"; // Ember.assert
 import { isGlobalPath } from "ember-metal/binding";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { fmt } from "ember-runtime/system/string";
 import ContainerView from "ember-views/views/container_view";
 import CoreView from "ember-views/views/core_view";
 import View from "ember-views/views/view";
