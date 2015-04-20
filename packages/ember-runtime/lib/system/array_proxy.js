@@ -290,7 +290,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
 
-    insertAt(get(this, 'content'), idx, object);
+    this._replace(idx, 0, [object]);
     return this;
   },
 
