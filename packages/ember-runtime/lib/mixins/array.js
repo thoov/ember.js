@@ -66,6 +66,11 @@ export function insertAt(content, idx, item) {
   return content.splice(idx, 0, item);
 }
 
+export function removeAt(content, idx, length = 1) {
+  if (content.removeAt) { return content.removeAt(idx, length); }
+  return content.splice(idx, length);
+}
+
 
 // ..........................................................
 // ARRAY

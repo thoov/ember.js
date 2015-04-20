@@ -20,7 +20,11 @@ import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import SubArray from 'ember-runtime/system/subarray';
 import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
-import { objectAt, insertAt } from 'ember-runtime/mixins/array';
+import {
+  objectAt,
+  insertAt,
+  removeAt
+} from 'ember-runtime/mixins/array';
 
 var a_slice = [].slice;
 
@@ -188,7 +192,7 @@ export function map(dependentKey, callback) {
       return array;
     },
     removedItem(array, item, changeMeta, instanceMeta) {
-      array.removeAt(changeMeta.index, 1);
+      removeAt(array, changeMeta.index, 1);
       return array;
     }
   };
@@ -296,7 +300,7 @@ export function filter(dependentKey, callback) {
       var filterIndex = instanceMeta.filteredArrayIndexes.removeItem(changeMeta.index);
 
       if (filterIndex > -1) {
-        array.removeAt(filterIndex);
+        removeAt(array, filterIndex);
       }
 
       return array;
@@ -810,7 +814,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     removedItem(array, item, changeMeta, instanceMeta) {
       var index = instanceMeta.binarySearch(array, item);
-      array.removeAt(index);
+      removeAt(array, index);
       instanceMeta.dropKeyFor(item);
       return array;
     }

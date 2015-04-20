@@ -18,7 +18,11 @@ import { arrayComputed } from "ember-runtime/computed/array_computed";
 import { reduceComputed } from "ember-runtime/computed/reduce_computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SubArray from "ember-runtime/system/subarray";
-import { objectAt, insertAt } from "ember-runtime/mixins/array";
+import {
+  objectAt,
+  insertAt,
+  removeAt
+} from "ember-runtime/mixins/array";
 
 var obj, addCalls, removeCalls, callbackItems, shared;
 
@@ -499,7 +503,7 @@ QUnit.test("removedItem is not erroneously called for dependent arrays during a 
 
   function removedItem(array, item, changeMeta) {
     ok(get(array, 'length') > changeMeta.index, "removedItem not called with invalid index");
-    array.removeAt(changeMeta.index, 1);
+    removeAt(array, changeMeta.index, 1);
     return array;
   }
 
@@ -593,7 +597,7 @@ QUnit.module('Ember.arryComputed - self chains', {
           return array;
         },
         removedItem(array, item, changeMeta, instanceMeta) {
-          array.removeAt(changeMeta.index, 1);
+          removeAt(array, changeMeta.index, 1);
           return array;
         }
       })
@@ -695,7 +699,7 @@ QUnit.test("changeMeta includes item and index", function() {
   // remove1
   run(function() {
     item = objectAt(items, 1);
-    items.removeAt(1, 1);
+    removeAt(items, 1, 1);
   });
 
   run(function() {
@@ -746,7 +750,7 @@ QUnit.test("changeMeta includes changedCount and arrayChanged", function() {
   letters.pushObject('c');
   letters.popObject();
   letters.replace(0, 1, ['d']);
-  letters.removeAt(0, letters.length);
+  removeAt(letters, 0, letters.length);
 
   var expected = ["add:2:ab", "add:2:ab", "add:1:abc", "remove:1:abc", "remove:1:ab", "add:1:db", "remove:2:db", "remove:2:db"];
   deepEqual(callbackItems, expected, "changeMeta has count and changed");
@@ -764,7 +768,7 @@ QUnit.test("`updateIndexes` is not over-eager about skipping retain:n (#4620)", 
       },
       removedItem(array, item, changeMeta) {
         tracked.push('-' + (changeMeta.previousValues ? changeMeta.previousValues.n : get(item, 'n')) + '@' + changeMeta.index);
-        array.removeAt(changeMeta.index);
+        removeAt(array, changeMeta.index);
         return array;
       }
     })
@@ -815,7 +819,7 @@ QUnit.test("when initialValue is undefined, everything works as advertised", fun
       removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
         var filterIndex = instanceMeta.subArray.removeItem(changeMeta.index);
         if (filterIndex > -1) {
-          instanceMeta.matchingItems.removeAt(filterIndex);
+          removeAt(instanceMeta.matchingItems, filterIndex);
         }
         return instanceMeta.firstMatch();
       }
@@ -831,7 +835,7 @@ QUnit.test("when initialValue is undefined, everything works as advertised", fun
 
   equal(get(chars, 'firstUpper'), 'A', "result is the first match when matching objects are present");
 
-  get(chars, 'letters').removeAt(3);
+  removeAt(get(chars, 'letters'), 3);
 
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });

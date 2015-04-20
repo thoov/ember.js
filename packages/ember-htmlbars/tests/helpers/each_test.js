@@ -16,7 +16,7 @@ import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import compile from "ember-template-compiler/system/compile";
-import { insertAt } from "ember-runtime/mixins/array";
+import { insertAt, removeAt } from "ember-runtime/mixins/array";
 
 var people, view, registry, container;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
@@ -174,7 +174,7 @@ QUnit.test("it allows you to access the current context using {{this}}", functio
 
 QUnit.test("it updates the view if an item is removed", function() {
   run(function() {
-    people.removeAt(0);
+    removeAt(people, 0);
   });
 
   assertHTML(view, "Annabelle");
@@ -182,7 +182,7 @@ QUnit.test("it updates the view if an item is removed", function() {
 
 QUnit.test("it updates the view if an item is replaced", function() {
   run(function() {
-    people.removeAt(0);
+    removeAt(people, 0);
     insertAt(people, 0, { name: "Kazuki" });
   });
 
@@ -192,7 +192,7 @@ QUnit.test("it updates the view if an item is replaced", function() {
 QUnit.test("can add and replace in the same runloop", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
-    people.removeAt(0);
+    removeAt(people, 0);
     insertAt(people, 0, { name: "Kazuki" });
   });
 
@@ -202,7 +202,7 @@ QUnit.test("can add and replace in the same runloop", function() {
 QUnit.test("can add and replace the object before the add in the same runloop", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
-    people.removeAt(1);
+    removeAt(people, 1);
     insertAt(people, 1, { name: "Kazuki" });
   });
 
@@ -212,11 +212,11 @@ QUnit.test("can add and replace the object before the add in the same runloop", 
 QUnit.test("can add and replace complicatedly", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
-    people.removeAt(1);
+    removeAt(people, 1);
     insertAt(people, 1, { name: "Kazuki" });
     people.pushObject({ name: "Firestone" });
     people.pushObject({ name: "McMunch" });
-    people.removeAt(3);
+    removeAt(people, 3);
   });
 
   assertHTML(view, "Steve HoltKazukiTom DaleMcMunch");
@@ -225,11 +225,11 @@ QUnit.test("can add and replace complicatedly", function() {
 QUnit.test("can add and replace complicatedly harder", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
-    people.removeAt(1);
+    removeAt(people, 1);
     insertAt(people, 1, { name: "Kazuki" });
     people.pushObject({ name: "Firestone" });
     people.pushObject({ name: "McMunch" });
-    people.removeAt(2);
+    removeAt(people, 2);
   });
 
   assertHTML(view, "Steve HoltKazukiFirestoneMcMunch");

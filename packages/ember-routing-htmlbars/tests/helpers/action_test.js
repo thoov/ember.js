@@ -8,6 +8,7 @@ import { Registry } from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
 import EmberController from "ember-runtime/controllers/controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
+import { removeAt } from "ember-runtime/mixins/array";
 
 import compile from "ember-template-compiler/system/compile";
 import EmberView from "ember-views/views/view";
@@ -554,7 +555,7 @@ QUnit.test("should unregister event handlers on inside virtual views", function(
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
   run(function() {
-    things.removeAt(0);
+    removeAt(things, 0);
   });
 
   ok(!ActionManager.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
