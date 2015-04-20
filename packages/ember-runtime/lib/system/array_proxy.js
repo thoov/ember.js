@@ -21,7 +21,8 @@ import alias from "ember-metal/alias";
 import {
   addArrayObserver,
   removeArrayObserver,
-  objectAt
+  objectAt,
+  insertAt
 } from "ember-runtime/mixins/array";
 
 import {
@@ -289,7 +290,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
 
-    this._replace(idx, 0, [object]);
+    insertAt(this, idx, object);
     return this;
   },
 

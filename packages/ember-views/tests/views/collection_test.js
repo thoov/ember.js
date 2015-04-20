@@ -11,6 +11,7 @@ import jQuery from "ember-views/system/jquery";
 import CollectionView from "ember-views/views/collection_view";
 import View from "ember-views/views/view";
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
+import { insertAt } from "ember-runtime/mixins/array";
 
 var trim = jQuery.trim;
 var view;
@@ -149,7 +150,7 @@ QUnit.test("should insert a new item in DOM when an item is added to the content
   });
 
   run(function() {
-    content.insertAt(1, 'quux');
+    insertAt(content, 1, 'quux');
   });
 
   equal(trim(view.$(':nth-child(2)').text()), 'quux');
@@ -207,7 +208,7 @@ QUnit.test("it updates the view if an item is replaced", function() {
 
   run(function() {
     content.removeAt(1);
-    content.insertAt(1, "Kazuki");
+    insertAt(content, 1, "Kazuki");
   });
 
   forEach(content, function(item, idx) {
@@ -238,7 +239,7 @@ QUnit.test("can add and replace in the same runloop", function() {
   run(function() {
     content.pushObject("Tom Dale");
     content.removeAt(0);
-    content.insertAt(0, "Kazuki");
+    insertAt(content, 0, "Kazuki");
   });
 
   forEach(content, function(item, idx) {
@@ -270,7 +271,7 @@ QUnit.test("can add and replace the object before the add in the same runloop", 
   run(function() {
     content.pushObject("Tom Dale");
     content.removeAt(1);
-    content.insertAt(1, "Kazuki");
+    insertAt(content, 1, "Kazuki");
   });
 
   forEach(content, function(item, idx) {
@@ -301,7 +302,7 @@ QUnit.test("can add and replace complicatedly", function() {
   run(function() {
     content.pushObject("Tom Dale");
     content.removeAt(1);
-    content.insertAt(1, "Kazuki");
+    insertAt(content, 1, "Kazuki");
     content.pushObject("Firestone");
     content.pushObject("McMunch");
   });
@@ -334,7 +335,7 @@ QUnit.test("can add and replace complicatedly harder", function() {
   run(function() {
     content.pushObject("Tom Dale");
     content.removeAt(1);
-    content.insertAt(1, "Kazuki");
+    insertAt(content, 1, "Kazuki");
     content.pushObject("Firestone");
     content.pushObject("McMunch");
     content.removeAt(2);

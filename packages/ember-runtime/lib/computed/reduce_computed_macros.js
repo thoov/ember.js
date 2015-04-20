@@ -20,7 +20,7 @@ import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import SubArray from 'ember-runtime/system/subarray';
 import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
-import { objectAt } from 'ember-runtime/mixins/array';
+import { objectAt, insertAt } from 'ember-runtime/mixins/array';
 
 var a_slice = [].slice;
 
@@ -184,7 +184,7 @@ export function map(dependentKey, callback) {
   var options = {
     addedItem(array, item, changeMeta, instanceMeta) {
       var mapped = callback.call(this, item, changeMeta.index);
-      array.insertAt(changeMeta.index, mapped);
+      insertAt(array, changeMeta.index, mapped);
       return array;
     },
     removedItem(array, item, changeMeta, instanceMeta) {
@@ -286,7 +286,7 @@ export function filter(dependentKey, callback) {
       var filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
       if (match) {
-        array.insertAt(filterIndex, item);
+        insertAt(array, filterIndex, item);
       }
 
       return array;
@@ -712,7 +712,7 @@ function customSort(itemsKey, comparator) {
         for (var i=0; i<waiting.length; i++) {
           item = waiting[i];
           index = instanceMeta.binarySearch(array, item);
-          array.insertAt(index, item);
+          insertAt(array, index, item);
         }
       };
       instanceMeta.insertLater = function(item) {
@@ -804,7 +804,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     addedItem(array, item, changeMeta, instanceMeta) {
       var index = instanceMeta.binarySearch(array, item);
-      array.insertAt(index, item);
+      insertAt(array, index, item);
       return array;
     },
 

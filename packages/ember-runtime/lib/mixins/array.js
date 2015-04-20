@@ -61,6 +61,11 @@ export function objectAt(content, idx) {
   return content[idx];
 }
 
+export function insertAt(content, idx, item) {
+  if (content.insertAt) { return content.insertAt(idx, item); }
+  return content.splice(idx, 0, item);
+}
+
 
 // ..........................................................
 // ARRAY

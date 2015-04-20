@@ -16,6 +16,7 @@ import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import compile from "ember-template-compiler/system/compile";
+import { insertAt } from "ember-runtime/mixins/array";
 
 var people, view, registry, container;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
@@ -182,7 +183,7 @@ QUnit.test("it updates the view if an item is removed", function() {
 QUnit.test("it updates the view if an item is replaced", function() {
   run(function() {
     people.removeAt(0);
-    people.insertAt(0, { name: "Kazuki" });
+    insertAt(people, 0, { name: "Kazuki" });
   });
 
   assertHTML(view, "KazukiAnnabelle");
@@ -192,7 +193,7 @@ QUnit.test("can add and replace in the same runloop", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(0);
-    people.insertAt(0, { name: "Kazuki" });
+    insertAt(people, 0, { name: "Kazuki" });
   });
 
   assertHTML(view, "KazukiAnnabelleTom Dale");
@@ -202,7 +203,7 @@ QUnit.test("can add and replace the object before the add in the same runloop", 
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(1);
-    people.insertAt(1, { name: "Kazuki" });
+    insertAt(people, 1, { name: "Kazuki" });
   });
 
   assertHTML(view, "Steve HoltKazukiTom Dale");
@@ -212,7 +213,7 @@ QUnit.test("can add and replace complicatedly", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(1);
-    people.insertAt(1, { name: "Kazuki" });
+    insertAt(people, 1, { name: "Kazuki" });
     people.pushObject({ name: "Firestone" });
     people.pushObject({ name: "McMunch" });
     people.removeAt(3);
@@ -225,7 +226,7 @@ QUnit.test("can add and replace complicatedly harder", function() {
   run(function() {
     people.pushObject({ name: "Tom Dale" });
     people.removeAt(1);
-    people.insertAt(1, { name: "Kazuki" });
+    insertAt(people, 1, { name: "Kazuki" });
     people.pushObject({ name: "Firestone" });
     people.pushObject({ name: "McMunch" });
     people.removeAt(2);
@@ -312,7 +313,7 @@ QUnit.test("it works inside a table element", function() {
   equal(tableView.$('td').length, 3, "renders an additional <td> element when an object is added");
 
   run(function() {
-    people.insertAt(0, { name: "Kim Deal" });
+    insertAt(people, 0, { name: "Kim Deal" });
   });
 
   equal(tableView.$('td').length, 4, "renders an additional <td> when an object is inserted at the beginning of the array");

@@ -18,7 +18,7 @@ import { arrayComputed } from "ember-runtime/computed/array_computed";
 import { reduceComputed } from "ember-runtime/computed/reduce_computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SubArray from "ember-runtime/system/subarray";
-import { objectAt } from "ember-runtime/mixins/array";
+import { objectAt, insertAt } from "ember-runtime/mixins/array";
 
 var obj, addCalls, removeCalls, callbackItems, shared;
 
@@ -402,7 +402,7 @@ QUnit.test("dependent arrays can use `replace` with an out of bounds index to ad
     dependentArray: dependentArray,
     computed: arrayComputed('dependentArray', {
       addedItem(acc, item, changeMeta) {
-        acc.insertAt(changeMeta.index, item);
+        insertAt(acc, changeMeta.index, item);
         return acc;
       },
       removedItem(acc) { return acc; }
@@ -493,7 +493,7 @@ QUnit.test("dependent arrays that call `replace` with a too-large removedCount a
 
 QUnit.test("removedItem is not erroneously called for dependent arrays during a recomputation", function() {
   function addedItem(array, item, changeMeta) {
-    array.insertAt(changeMeta.index, item);
+    insertAt(array, changeMeta.index, item);
     return array;
   }
 
@@ -589,7 +589,7 @@ QUnit.module('Ember.arryComputed - self chains', {
       names: arrayComputed('@this.@each.name', {
         addedItem(array, item, changeMeta, instanceMeta) {
           var mapped = get(item, 'name');
-          array.insertAt(changeMeta.index, mapped);
+          insertAt(array, changeMeta.index, mapped);
           return array;
         },
         removedItem(array, item, changeMeta, instanceMeta) {
@@ -759,7 +759,7 @@ QUnit.test("`updateIndexes` is not over-eager about skipping retain:n (#4620)", 
     items: arrayComputed('content.@each.n', {
       addedItem(array, item, changeMeta) {
         tracked.push('+' + get(item, 'n') + '@' + changeMeta.index);
-        array.insertAt(changeMeta.index, item);
+        insertAt(array, changeMeta.index, item);
         return array;
       },
       removedItem(array, item, changeMeta) {
@@ -807,7 +807,7 @@ QUnit.test("when initialValue is undefined, everything works as advertised", fun
         var filterIndex;
         filterIndex = instanceMeta.subArray.addItem(changeMeta.index, item.toUpperCase() === item);
         if (filterIndex > -1) {
-          instanceMeta.matchingItems.insertAt(filterIndex, item);
+          insertAt(instanceMeta.matchingItems, filterIndex, item);
         }
         return instanceMeta.firstMatch();
       },
