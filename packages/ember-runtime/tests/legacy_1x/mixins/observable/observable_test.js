@@ -1,5 +1,5 @@
 import { get } from 'ember-metal/property_get';
-import { forEach } from 'ember-metal/enumerable_utils';
+import { forEach, replace } from 'ember-metal/enumerable_utils';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import { typeOf } from 'ember-metal/utils';
@@ -781,7 +781,7 @@ QUnit.test('toggle function, should be boolean', function() {
 });
 
 QUnit.test('should notify array observer when array changes', function() {
-  get(object, 'normalArray').replace(0, 0, 6);
+  replace(get(object, 'normalArray'), 0, 0, 6);
   equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
 });
 

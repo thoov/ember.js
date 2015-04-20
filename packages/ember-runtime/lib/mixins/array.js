@@ -71,7 +71,6 @@ export function removeAt(content, idx, length = 1) {
   return content.splice(idx, length);
 }
 
-
 // ..........................................................
 // ARRAY
 //

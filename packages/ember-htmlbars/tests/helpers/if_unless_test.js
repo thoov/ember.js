@@ -10,7 +10,7 @@ import compile from "ember-template-compiler/system/compile";
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-metal/utils';
-import { forEach } from 'ember-metal/enumerable_utils';
+import { forEach, replace } from 'ember-metal/enumerable_utils';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var originalLookup = Ember.lookup;
@@ -851,7 +851,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
     equal(view.$().text(), 'truthy');
 
     run(function() {
-      list.replace(0, 1);
+      replace(list, 0, 1);
     });
 
     equal(view.$().text(), 'falsy');

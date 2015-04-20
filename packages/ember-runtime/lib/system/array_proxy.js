@@ -21,12 +21,12 @@ import alias from "ember-metal/alias";
 import {
   addArrayObserver,
   removeArrayObserver,
-  objectAt,
-  insertAt
+  objectAt
 } from "ember-runtime/mixins/array";
 
 import {
-  indexOf
+  indexOf,
+  replace
 } from "ember-metal/enumerable_utils";
 
 /**
@@ -127,7 +127,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @return {void}
   */
   replaceContent(idx, amt, objects) {
-    get(this, 'content').replace(idx, amt, objects);
+    replace(get(this, 'content'), idx, amt, objects);
   },
 
   /**
