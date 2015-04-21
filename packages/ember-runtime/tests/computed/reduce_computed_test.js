@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import { map } from 'ember-metal/enumerable_utils';
+import { map, replace } from 'ember-metal/enumerable_utils';
 import {
   get,
   getWithDefault
@@ -18,7 +18,11 @@ import { arrayComputed } from "ember-runtime/computed/array_computed";
 import { reduceComputed } from "ember-runtime/computed/reduce_computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SubArray from "ember-runtime/system/subarray";
-import { objectAt } from "ember-runtime/mixins/array";
+import {
+  objectAt,
+  insertAt,
+  removeAt
+} from "ember-runtime/mixins/array";
 
 var obj, addCalls, removeCalls, callbackItems, shared;
 
@@ -309,7 +313,7 @@ QUnit.test("array observers are torn down when dependent arrays change", functio
   equal(addCalls, 9, 'add is called for each item in the new array');
   equal(removeCalls, 0, 'remove is not called when the array is reset');
 
-  numbers.replace(0, numbers.get('length'), Ember.A([7,8,9,10]));
+  replace(numbers, 0, numbers.get('length'), Ember.A([7,8,9,10]));
 
   equal(addCalls, 9, 'add is not called');
   equal(removeCalls, 0, 'remove is not called');
@@ -323,7 +327,7 @@ QUnit.test("modifying properties on dependent array items triggers observers exa
   equal(removeCalls, 0, 'precond - removed has not been called');
 
   run(function() {
-    numbers.replace(0, 2, [7,8,9,10]);
+    replace(numbers, 0, 2, [7,8,9,10]);
   });
 
   equal(addCalls, 10, 'add is called for each item added');
@@ -402,7 +406,7 @@ QUnit.test("dependent arrays can use `replace` with an out of bounds index to ad
     dependentArray: dependentArray,
     computed: arrayComputed('dependentArray', {
       addedItem(acc, item, changeMeta) {
-        acc.insertAt(changeMeta.index, item);
+        insertAt(acc, changeMeta.index, item);
         return acc;
       },
       removedItem(acc) { return acc; }
@@ -413,11 +417,11 @@ QUnit.test("dependent arrays can use `replace` with an out of bounds index to ad
 
   deepEqual(array, [], "precond - computed array is initially empty");
 
-  dependentArray.replace(100, 0, [1, 2]);
+  replace(dependentArray, 100, 0, [1, 2]);
 
   deepEqual(array, [1, 2], "index >= length treated as a push");
 
-  dependentArray.replace(-100, 0, [3, 4]);
+  replace(dependentArray, -100, 0, [3, 4]);
 
   deepEqual(array, [3, 4, 1, 2], "index < 0 treated as an unshift");
 });
@@ -441,7 +445,7 @@ QUnit.test("dependent arrays can use `replace` with a negative index to remove i
 
   deepEqual(array, [], "precond - no items have been removed initially");
 
-  dependentArray.replace(-3, 2);
+  replace(dependentArray, -3, 2);
 
   deepEqual(array, [4,3], "index < 0 used as a right index for removal");
 });
@@ -464,7 +468,7 @@ QUnit.test("dependent arrays that call `replace` with an out of bounds index to 
 
   deepEqual(array, [], "precond - computed array is initially empty");
 
-  dependentArray.replace(100, 2);
+  replace(dependentArray, 100, 2);
 });
 
 QUnit.test("dependent arrays that call `replace` with a too-large removedCount a) works and b) still right-truncates", function() {
@@ -486,20 +490,20 @@ QUnit.test("dependent arrays that call `replace` with a too-large removedCount a
 
   deepEqual(array, [], "precond - computed array is initially empty");
 
-  dependentArray.replace(1, 200);
+  replace(dependentArray, 1, 200);
 
   deepEqual(array, [2], "array was correctly right-truncated");
 });
 
 QUnit.test("removedItem is not erroneously called for dependent arrays during a recomputation", function() {
   function addedItem(array, item, changeMeta) {
-    array.insertAt(changeMeta.index, item);
+    insertAt(array, changeMeta.index, item);
     return array;
   }
 
   function removedItem(array, item, changeMeta) {
     ok(get(array, 'length') > changeMeta.index, "removedItem not called with invalid index");
-    array.removeAt(changeMeta.index, 1);
+    removeAt(array, changeMeta.index, 1);
     return array;
   }
 
@@ -589,11 +593,11 @@ QUnit.module('Ember.arryComputed - self chains', {
       names: arrayComputed('@this.@each.name', {
         addedItem(array, item, changeMeta, instanceMeta) {
           var mapped = get(item, 'name');
-          array.insertAt(changeMeta.index, mapped);
+          insertAt(array, changeMeta.index, mapped);
           return array;
         },
         removedItem(array, item, changeMeta, instanceMeta) {
-          array.removeAt(changeMeta.index, 1);
+          removeAt(array, changeMeta.index, 1);
           return array;
         }
       })
@@ -695,7 +699,7 @@ QUnit.test("changeMeta includes item and index", function() {
   // remove1
   run(function() {
     item = objectAt(items, 1);
-    items.removeAt(1, 1);
+    removeAt(items, 1, 1);
   });
 
   run(function() {
@@ -745,8 +749,8 @@ QUnit.test("changeMeta includes changedCount and arrayChanged", function() {
   obj.get('lettersArrayComputed');
   letters.pushObject('c');
   letters.popObject();
-  letters.replace(0, 1, ['d']);
-  letters.removeAt(0, letters.length);
+  replace(letters, 0, 1, ['d']);
+  removeAt(letters, 0, letters.length);
 
   var expected = ["add:2:ab", "add:2:ab", "add:1:abc", "remove:1:abc", "remove:1:ab", "add:1:db", "remove:2:db", "remove:2:db"];
   deepEqual(callbackItems, expected, "changeMeta has count and changed");
@@ -759,12 +763,12 @@ QUnit.test("`updateIndexes` is not over-eager about skipping retain:n (#4620)", 
     items: arrayComputed('content.@each.n', {
       addedItem(array, item, changeMeta) {
         tracked.push('+' + get(item, 'n') + '@' + changeMeta.index);
-        array.insertAt(changeMeta.index, item);
+        insertAt(array, changeMeta.index, item);
         return array;
       },
       removedItem(array, item, changeMeta) {
         tracked.push('-' + (changeMeta.previousValues ? changeMeta.previousValues.n : get(item, 'n')) + '@' + changeMeta.index);
-        array.removeAt(changeMeta.index);
+        removeAt(array, changeMeta.index);
         return array;
       }
     })
@@ -807,7 +811,7 @@ QUnit.test("when initialValue is undefined, everything works as advertised", fun
         var filterIndex;
         filterIndex = instanceMeta.subArray.addItem(changeMeta.index, item.toUpperCase() === item);
         if (filterIndex > -1) {
-          instanceMeta.matchingItems.insertAt(filterIndex, item);
+          insertAt(instanceMeta.matchingItems, filterIndex, item);
         }
         return instanceMeta.firstMatch();
       },
@@ -815,7 +819,7 @@ QUnit.test("when initialValue is undefined, everything works as advertised", fun
       removedItem(accumulatedValue, item, changeMeta, instanceMeta) {
         var filterIndex = instanceMeta.subArray.removeItem(changeMeta.index);
         if (filterIndex > -1) {
-          instanceMeta.matchingItems.removeAt(filterIndex);
+          removeAt(instanceMeta.matchingItems, filterIndex);
         }
         return instanceMeta.firstMatch();
       }
@@ -831,7 +835,7 @@ QUnit.test("when initialValue is undefined, everything works as advertised", fun
 
   equal(get(chars, 'firstUpper'), 'A', "result is the first match when matching objects are present");
 
-  get(chars, 'letters').removeAt(3);
+  removeAt(get(chars, 'letters'), 3);
 
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });

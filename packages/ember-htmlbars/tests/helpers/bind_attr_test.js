@@ -15,6 +15,7 @@ import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { styleWarning } from "ember-views/attr_nodes/attr_node";
 import { SafeString } from "ember-htmlbars/utils/string";
+import { removeAt } from "ember-runtime/mixins/array";
 
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-template-compiler/system/compile";
@@ -491,7 +492,7 @@ QUnit.test("should be able to bind-attr to var in {{#each var in list}} block", 
 
   run(function() {
     var imagesArray = view.get('images');
-    imagesArray.removeAt(0);
+    removeAt(imagesArray, 0);
   });
 
   images = view.$('img');

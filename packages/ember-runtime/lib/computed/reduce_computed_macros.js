@@ -20,7 +20,11 @@ import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import SubArray from 'ember-runtime/system/subarray';
 import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
-import { objectAt } from 'ember-runtime/mixins/array';
+import {
+  objectAt,
+  insertAt,
+  removeAt
+} from 'ember-runtime/mixins/array';
 
 var a_slice = [].slice;
 
@@ -184,11 +188,11 @@ export function map(dependentKey, callback) {
   var options = {
     addedItem(array, item, changeMeta, instanceMeta) {
       var mapped = callback.call(this, item, changeMeta.index);
-      array.insertAt(changeMeta.index, mapped);
+      insertAt(array, changeMeta.index, mapped);
       return array;
     },
     removedItem(array, item, changeMeta, instanceMeta) {
-      array.removeAt(changeMeta.index, 1);
+      removeAt(array, changeMeta.index, 1);
       return array;
     }
   };
@@ -286,7 +290,7 @@ export function filter(dependentKey, callback) {
       var filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
       if (match) {
-        array.insertAt(filterIndex, item);
+        insertAt(array, filterIndex, item);
       }
 
       return array;
@@ -296,7 +300,7 @@ export function filter(dependentKey, callback) {
       var filterIndex = instanceMeta.filteredArrayIndexes.removeItem(changeMeta.index);
 
       if (filterIndex > -1) {
-        array.removeAt(filterIndex);
+        removeAt(array, filterIndex);
       }
 
       return array;
@@ -712,7 +716,7 @@ function customSort(itemsKey, comparator) {
         for (var i=0; i<waiting.length; i++) {
           item = waiting[i];
           index = instanceMeta.binarySearch(array, item);
-          array.insertAt(index, item);
+          insertAt(array, index, item);
         }
       };
       instanceMeta.insertLater = function(item) {
@@ -804,13 +808,13 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     addedItem(array, item, changeMeta, instanceMeta) {
       var index = instanceMeta.binarySearch(array, item);
-      array.insertAt(index, item);
+      insertAt(array, index, item);
       return array;
     },
 
     removedItem(array, item, changeMeta, instanceMeta) {
       var index = instanceMeta.binarySearch(array, item);
-      array.removeAt(index);
+      removeAt(array, index);
       instanceMeta.dropKeyFor(item);
       return array;
     }

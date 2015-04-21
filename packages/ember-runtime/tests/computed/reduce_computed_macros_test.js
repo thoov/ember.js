@@ -12,6 +12,7 @@ import {
 } from "ember-metal/property_events";
 import { forEach } from "ember-metal/array";
 import { observer, Mixin } from 'ember-metal/mixin';
+import { replace } from 'ember-metal/enumerable_utils';
 import {
   sum as computedSum,
   min as computedMin,
@@ -26,8 +27,11 @@ import {
   union as computedUnion,
   intersect as computedIntersect
 } from 'ember-runtime/computed/reduce_computed_macros';
+import {
+  objectAt,
+  removeAt
+} from 'ember-runtime/mixins/array';
 
-import { objectAt } from 'ember-runtime/mixins/array';
 
 var obj, sorted, sortProps, items, userFnCalls, todos, filtered, union;
 
@@ -71,7 +75,7 @@ QUnit.test("it maps simple properties", function() {
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 1, 5]);
 
   run(function() {
-    obj.get('array').removeAt(3);
+    removeAt(obj.get('array'), 3);
   });
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
@@ -140,7 +144,7 @@ QUnit.test("it maps objects", function() {
   deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert' }, { name: 'Leanna' }, { name: 'Eddard' }]);
 
   run(function() {
-    obj.get('arrayObjects').removeAt(1);
+    removeAt(obj.get('arrayObjects'), 1);
   });
 
   deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert' }, { name: 'Eddard' }]);
@@ -206,7 +210,7 @@ QUnit.test("it maps properties", function() {
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 1, 5]);
 
   run(function() {
-    obj.get('array').removeAt(3);
+    removeAt(obj.get('array'), 3);
   });
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
@@ -513,7 +517,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + " adds new items");
 
     run(function() {
-      array2.removeAt(6); // remove 7
+      removeAt(array2, 6); // remove 7
     });
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + " does not remove items that are still in the dependent array");
@@ -762,8 +766,8 @@ function commonSortTests() {
       });
       items = get(obj, 'items');
 
-      items.replace(0, 1, jaime);
-      items.replace(1, 1, jaimeInDisguise);
+      replace(items, 0, 1, jaime);
+      replace(items, 1, 1, jaimeInDisguise);
       sorted = get(obj, 'sortedItems');
     });
 

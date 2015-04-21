@@ -21,7 +21,8 @@ import {
   observer
 } from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how their exposed in ember-metal?
 import {
-  objectAt
+  objectAt,
+  insertAt
 } from 'ember-runtime/mixins/array';
 
 import {
@@ -269,7 +270,7 @@ export default Mixin.create(MutableEnumerable, {
     var length = get(arrangedContent, 'length');
 
     var idx = this._binarySearch(item, 0, length);
-    arrangedContent.insertAt(idx, item);
+    insertAt(arrangedContent, idx, item);
   },
 
   contentItemSortPropertyDidChange(item) {
