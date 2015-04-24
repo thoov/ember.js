@@ -4,6 +4,13 @@
 */
 
 // ..........................................................
+// CONSTANTS
+//
+
+var OUT_OF_RANGE_EXCEPTION = "Index out of range";
+var EMPTY = [];
+
+// ..........................................................
 // HELPERS
 //
 import Ember from 'ember-metal/core'; // ES6TODO: Ember.A
@@ -28,6 +35,7 @@ import {
   hasListeners
 } from 'ember-metal/events';
 import { isWatching } from 'ember-metal/watching';
+import EmberError from "ember-metal/error";
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   var willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -63,13 +71,222 @@ export function objectAt(content, idx) {
 
 export function insertAt(content, idx, item) {
   if (content.insertAt) { return content.insertAt(idx, item); }
-  return content.splice(idx, 0, item);
+  return replace(content, idx, 0, [item]);
 }
 
-export function removeAt(content, idx, length = 1) {
-  if (content.removeAt) { return content.removeAt(idx, length); }
-  return content.splice(idx, length);
+export function removeAt(content, start, len = 1) {
+  if ('number' === typeof start) {
+
+    if ((start < 0) || (start >= get(content, 'length'))) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    }
+
+    replace(content, start, len, EMPTY);
+  }
+
+  return content;
 }
+
+export function addObject(content, item) {
+  if (content.addObject) { return content.addObject(item); }
+  if (!contains(content, item)) {
+    return pushObject(content, item);
+  }
+  return content;
+}
+
+export function pushObject(content, item) {
+  if (content.pushObject) { return content.pushObject(item); }
+  return insertAt(content, get(content, 'length'), item);
+}
+
+export function contains(content, item) {
+  if (content.contains) { return content.contains(item); }
+  return content.indexOf(item) !== -1;
+}
+
+function replace(content, idx, amt, objects) {
+  var len = objects ? get(objects, 'length') : 0;
+  arrayContentWillChange(content, idx, amt, len);
+
+  if (len === 0) {
+    content.splice(idx, amt);
+  } else {
+    replace(content, idx, amt, objects); // TODO what is this doing?
+  }
+
+  arrayContentDidChange(content, idx, amt, len);
+  return content;
+}
+
+function arrayContentWillChange(content, startIdx, removeAmt, addAmt) {
+  var removing, lim;
+
+  // if no args are passed assume everything changes
+  if (startIdx === undefined) {
+    startIdx = 0;
+    removeAmt = addAmt = -1;
+  } else {
+    if (removeAmt === undefined) {
+      removeAmt = -1;
+    }
+
+    if (addAmt === undefined) {
+      addAmt = -1;
+    }
+  }
+
+  // Make sure the @each proxy is set up if anyone is observing @each
+  if (isWatching(content, '@each')) {
+    get(content, '@each');
+  }
+
+  sendEvent(content, '@array:before', [content, startIdx, removeAmt, addAmt]);
+
+  if (startIdx >= 0 && removeAmt >= 0 && get(content, 'hasEnumerableObservers')) {
+    removing = [];
+    lim = startIdx + removeAmt;
+
+    for (var idx = startIdx; idx < lim; idx++) {
+      removing.push(objectAt(content, idx));
+    }
+  } else {
+    removing = removeAmt;
+  }
+
+  enumerableContentWillChange(content, removing, addAmt);
+
+  return content;
+}
+
+function arrayContentDidChange(content, startIdx, removeAmt, addAmt) {
+  var adding, lim;
+
+  // if no args are passed assume everything changes
+  if (startIdx === undefined) {
+    startIdx = 0;
+    removeAmt = addAmt = -1;
+  } else {
+    if (removeAmt === undefined) {
+      removeAmt = -1;
+    }
+
+    if (addAmt === undefined) {
+      addAmt = -1;
+    }
+  }
+
+  if (startIdx >= 0 && addAmt >= 0 && get(content, 'hasEnumerableObservers')) {
+    adding = [];
+    lim = startIdx + addAmt;
+
+    for (var idx = startIdx; idx < lim; idx++) {
+      adding.push(objectAt(content, idx));
+    }
+  } else {
+    adding = addAmt;
+  }
+
+  enumerableContentDidChange(content, removeAmt, adding);
+  sendEvent(content, '@array:change', [content, startIdx, removeAmt, addAmt]);
+
+  var length = get(content, 'length');
+  var cachedFirst = cacheFor(content, 'firstObject');
+  var cachedLast = cacheFor(content, 'lastObject');
+
+  if (objectAt(content, 0) !== cachedFirst) {
+    propertyWillChange(content, 'firstObject');
+    propertyDidChange(content, 'firstObject');
+  }
+
+  if (objectAt(content, length-1) !== cachedLast) {
+    propertyWillChange(content, 'lastObject');
+    propertyDidChange(content, 'lastObject');
+  }
+
+  return content;
+}
+
+function enumerableContentWillChange(content, removing, adding) {
+  var removeCnt, addCnt, hasDelta;
+
+  if ('number' === typeof removing) {
+    removeCnt = removing;
+  } else if (removing) {
+    removeCnt = get(removing, 'length');
+  } else {
+    removeCnt = removing = -1;
+  }
+
+  if ('number' === typeof adding) {
+    addCnt = adding;
+  } else if (adding) {
+    addCnt = get(adding, 'length');
+  } else {
+    addCnt = adding = -1;
+  }
+
+  hasDelta = addCnt < 0 || removeCnt < 0 || addCnt - removeCnt !== 0;
+
+  if (removing === -1) {
+    removing = null;
+  }
+
+  if (adding === -1) {
+    adding = null;
+  }
+
+  propertyWillChange(content, '[]');
+
+  if (hasDelta) {
+    propertyWillChange(content, 'length');
+  }
+
+  sendEvent(content, '@enumerable:before', [content, removing, adding]);
+
+  return content;
+}
+
+function enumerableContentDidChange(content, removing, adding) {
+  var removeCnt, addCnt, hasDelta;
+
+  if ('number' === typeof removing) {
+    removeCnt = removing;
+  } else if (removing) {
+    removeCnt = get(removing, 'length');
+  } else {
+    removeCnt = removing = -1;
+  }
+
+  if ('number' === typeof adding) {
+    addCnt = adding;
+  } else if (adding) {
+    addCnt = get(adding, 'length');
+  } else {
+    addCnt = adding = -1;
+  }
+
+  hasDelta = addCnt < 0 || removeCnt < 0 || addCnt - removeCnt !== 0;
+
+  if (removing === -1) {
+    removing = null;
+  }
+
+  if (adding === -1) {
+    adding = null;
+  }
+
+  sendEvent(content, '@enumerable:change', [content, removing, adding]);
+
+  if (hasDelta) {
+    propertyDidChange(content, 'length');
+  }
+
+  propertyDidChange(content, '[]');
+
+  return propertyDidChange;
+}
+
 
 // ..........................................................
 // ARRAY
