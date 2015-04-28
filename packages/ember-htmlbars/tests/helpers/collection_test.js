@@ -13,7 +13,7 @@ import jQuery from "ember-views/system/jquery";
 import { computed } from "ember-metal/computed";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import compile from "ember-template-compiler/system/compile";
-import { objectAt } from "ember-runtime/mixins/array";
+import { objectAt, popObject } from "ember-runtime/mixins/array";
 
 var trim = jQuery.trim;
 
@@ -424,7 +424,7 @@ QUnit.test("should unsubscribe stream bindings", function() {
   equal(countSubscribers(barStreamBinding), 3, "adds 3 subscribers");
 
   run(function() {
-    view.get('content').popObject();
+    popObject(view.get('content'));
   });
 
   equal(countSubscribers(barStreamBinding), 2, "removes 1 subscriber");

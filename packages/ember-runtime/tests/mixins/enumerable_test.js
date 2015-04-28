@@ -7,6 +7,7 @@ import EmberArray from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { observer as emberObserver } from 'ember-metal/mixin';
+import { addObject } from "ember-runtime/mixins/array";
 
 
 function K() { return this; }
@@ -59,7 +60,7 @@ EnumerableTests.extend({
 
   // allows for testing of the basic enumerable after an internal mutation
   mutate(obj) {
-    obj.addObject(obj._content.length+1);
+    addObject(obj, obj._content.length+1);
   },
 
   toArray(obj) {
@@ -350,4 +351,3 @@ QUnit.test('removing enumerable observer should disable', function() {
   obj.enumerableContentDidChange();
   deepEqual(observer._after, null);
 });
-

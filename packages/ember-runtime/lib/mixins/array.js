@@ -36,6 +36,7 @@ import {
 } from 'ember-metal/events';
 import { isWatching } from 'ember-metal/watching';
 import EmberError from "ember-metal/error";
+import { isArray } from "ember-metal/utils";
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   var willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -75,6 +76,7 @@ export function insertAt(content, idx, item) {
 }
 
 export function removeAt(content, start, len = 1) {
+  if (content.removeAt) { return content.removeAt(start, len); }
   if ('number' === typeof start) {
 
     if ((start < 0) || (start >= get(content, 'length'))) {
@@ -100,12 +102,60 @@ export function pushObject(content, item) {
   return insertAt(content, get(content, 'length'), item);
 }
 
+export function removeObject(content, item) {
+  if (content.removeObject) { return content.removeObject(item); }
+  var loc = get(content, 'length') || 0;
+  while (--loc >= 0) {
+    var curObject = objectAt(content, loc);
+
+    if (curObject === item) {
+      removeAt(content, loc);
+    }
+  }
+  return this;
+}
+
 export function contains(content, item) {
   if (content.contains) { return content.contains(item); }
   return content.indexOf(item) !== -1;
 }
 
-function replace(content, idx, amt, objects) {
+export function popObject(content) {
+  var len = get(content, 'length');
+  if (len === 0) {
+    return null;
+  }
+
+  var ret = objectAt(content, len-1);
+  removeAt(content, len-1, 1);
+  return ret;
+}
+
+export function shiftObject(content) {
+  if (get(content, 'length') === 0) {
+    return null;
+  }
+
+  var ret = objectAt(content, 0);
+  removeAt(content, 0);
+  return ret;
+}
+
+export function pushObjects(content, items) {
+  if (content.pushObjects) { return content.pushObjects(items); }
+  if (!(Enumerable.detect(items) || isArray(items))) {
+    throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
+  }
+  replace(content, get(content, 'length'), 0, items);
+  return content;
+}
+
+export function unshiftObject(content, obj) {
+  insertAt(content, 0, obj);
+  return obj;
+}
+
+export function replace(content, idx, amt, objects) {
   var len = objects ? get(objects, 'length') : 0;
   arrayContentWillChange(content, idx, amt, len);
 

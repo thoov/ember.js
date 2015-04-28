@@ -7,7 +7,10 @@ import ArrayProxy from "ember-runtime/system/array_proxy";
 import SortableMixin from "ember-runtime/mixins/sortable";
 import EmberObject from "ember-runtime/system/object";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import { objectAt } from "ember-runtime/mixins/array";
+import {
+  objectAt,
+  addObject
+} from "ember-runtime/mixins/array";
 import { replace } from 'ember-metal/enumerable_utils';
 
 var unsortedArray, sortedArrayController;
@@ -231,7 +234,7 @@ QUnit.test("addObject does not insert duplicates", function() {
 
   equal(sortedArrayProxy.get('length'), 1, 'array has 1 item');
 
-  sortedArrayProxy.addObject(obj);
+  addObject(sortedArrayProxy, obj);
 
   equal(sortedArrayProxy.get('length'), 1, 'array still has 1 item');
 });

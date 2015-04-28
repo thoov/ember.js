@@ -4,6 +4,7 @@ import { indexOf } from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import { get } from 'ember-metal/property_get';
+import { addObject } from "ember-runtime/mixins/array";
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -64,7 +65,7 @@ MutableEnumerableTests.extend({
 
   // allows for testing of the basic enumerable after an internal mutation
   mutate(obj) {
-    obj.addObject(this.getFixture(1)[0]);
+    addObject(obj, this.getFixture(1)[0]);
   },
 
   toArray(obj) {

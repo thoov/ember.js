@@ -21,7 +21,12 @@ import SubArray from "ember-runtime/system/subarray";
 import {
   objectAt,
   insertAt,
-  removeAt
+  removeAt,
+  pushObject,
+  pushObjects,
+  popObject,
+  removeObject,
+  shiftObject
 } from "ember-runtime/mixins/array";
 
 var obj, addCalls, removeCalls, callbackItems, shared;
@@ -41,13 +46,13 @@ QUnit.module('arrayComputed', {
         addedItem(array, item) {
           addCalls++;
           if (item % 2 === 0) {
-            array.pushObject(item);
+            pushObject(array, item);
           }
           return array;
         },
         removedItem(array, item) {
           removeCalls++;
-          array.removeObject(item);
+          removeObject(array, item);
           return array;
         }
       }),
@@ -55,7 +60,7 @@ QUnit.module('arrayComputed', {
       evenNumbersMultiDep: arrayComputed('numbers', 'otherNumbers', {
         addedItem(array, item) {
           if (item % 2 === 0) {
-            array.pushObject(item);
+            pushObject(array, item);
           }
           return array;
         }
@@ -69,12 +74,12 @@ QUnit.module('arrayComputed', {
         addedItem(array, item, keyName) {
           var value = item.get('v');
           if (value % 2 === 0) {
-            array.pushObject(value);
+            pushObject(array, value);
           }
           return array;
         },
         removedItem(array, item, keyName) {
-          array.removeObject(item.get('v'));
+          removeObject(array, item.get('v'));
           return array;
         }
       }).property('nestedNumbers.@each.v')
@@ -99,7 +104,7 @@ QUnit.test("when the dependent array is null or undefined, `addedItem` is not ca
     doubledNumbers: arrayComputed('numbers', {
       addedItem(array, n) {
         addCalls++;
-        array.pushObject(n * 2);
+        pushObject(array, n * 2);
         return array;
       }
     })
@@ -134,7 +139,7 @@ QUnit.test("after the first retrieval, array computed properties observe additio
   var evenNumbers = get(obj, 'evenNumbers');
 
   run(function() {
-    numbers.pushObjects([7, 8]);
+    pushObjects(numbers, [7, 8]);
   });
 
   deepEqual(evenNumbers, [2, 4, 6, 8], "array computed properties watch dependent arrays");
@@ -186,11 +191,11 @@ QUnit.test("multiple dependent keys can be specified via brace expansion", funct
     foo: reduceComputed({
       initialValue: Ember.A(),
       addedItem(array, item) {
-        array.pushObject('a:' + item);
+        pushObject(array, 'a:' + item);
         return array;
       },
       removedItem(array, item) {
-        array.pushObject('r:' + item);
+        pushObject(array, 'r:' + item);
         return array;
       }
     }).property('{bar,baz}')
@@ -198,19 +203,19 @@ QUnit.test("multiple dependent keys can be specified via brace expansion", funct
 
   deepEqual(get(obj, 'foo'), [], "initially empty");
 
-  get(obj, 'bar').pushObject(1);
+  pushObject(get(obj, 'bar'), 1);
 
   deepEqual(get(obj, 'foo'), ['a:1'], "added item from brace-expanded dependency");
 
-  get(obj, 'baz').pushObject(2);
+  pushObject(get(obj, 'baz'), 2);
 
   deepEqual(get(obj, 'foo'), ['a:1', 'a:2'], "added item from brace-expanded dependency");
 
-  get(obj, 'bar').popObject();
+  popObject(get(obj, 'bar'));
 
   deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1'], "removed item from brace-expanded dependency");
 
-  get(obj, 'baz').popObject();
+  popObject(get(obj, 'baz'));
 
   deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1', 'r:2'], "removed item from brace-expanded dependency");
 });
@@ -223,27 +228,27 @@ QUnit.test("multiple item property keys can be specified via brace expansion", f
     foo: reduceComputed({
       initialValue: Ember.A(),
       addedItem(array, item, changeMeta) {
-        array.pushObject('a:' + get(item, 'propA') + ':' + get(item, 'propB') + ':' + get(item, 'propC'));
+        pushObject(array, 'a:' + get(item, 'propA') + ':' + get(item, 'propB') + ':' + get(item, 'propC'));
         return array;
       },
       removedItem(array, item, changeMeta) {
-        array.pushObject('r:' + get(item, 'propA') + ':' + get(item, 'propB') + ':' + get(item, 'propC'));
+        pushObject(array, 'r:' + get(item, 'propA') + ':' + get(item, 'propB') + ':' + get(item, 'propC'));
         return array;
       }
     }).property('bar.@each.{propA,propB}')
   });
 
-  expected.pushObjects(['a:A:B:C']);
+  pushObjects(expected, ['a:A:B:C']);
   deepEqual(get(obj, 'foo'), expected, "initially added dependent item");
 
   set(item, 'propA', 'AA');
 
-  expected.pushObjects(['r:AA:B:C', 'a:AA:B:C']);
+  pushObjects(expected, ['r:AA:B:C', 'a:AA:B:C']);
   deepEqual(get(obj, 'foo'), expected, "observing item property key specified via brace expansion");
 
   set(item, 'propB', 'BB');
 
-  expected.pushObjects(['r:AA:BB:C', 'a:AA:BB:C']);
+  pushObjects(expected, ['r:AA:BB:C', 'a:AA:BB:C']);
   deepEqual(get(obj, 'foo'), expected, "observing item property key specified via brace expansion");
 
   set(item, 'propC', 'CC');
@@ -257,14 +262,14 @@ QUnit.test("doubly nested item property keys (@each.foo.@each) are not supported
       peopleByOrdinalPosition: Ember.A([{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })]) }]),
       people: arrayComputed({
         addedItem(array, item) {
-          array.pushObject(get(item, 'first.firstObject'));
+          pushObject(array, get(item, 'first.firstObject'));
           return array;
         }
       }).property('peopleByOrdinalPosition.@each.first'),
       names: arrayComputed({
         addedItem(array, item) {
           equal(get(item, 'name'), 'Jaime Lannister');
-          array.pushObject(item.get('name'));
+          pushObject(array, item.get('name'));
           return array;
         }
       }).property('people.@each.name')
@@ -278,7 +283,7 @@ QUnit.test("doubly nested item property keys (@each.foo.@each) are not supported
       people: [{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })]) }],
       names: arrayComputed({
         addedItem(array, item) {
-          array.pushObject(item);
+          pushObject(array, item);
           return array;
         }
       }).property('people.@each.first.@each.name')
@@ -343,8 +348,8 @@ QUnit.test("multiple array computed properties on the same object can observe de
   deepEqual(get(obj, 'evenNumbersMultiDep'), [2, 4, 6, 8], "precond - evenNumbersMultiDep is initially correct");
 
   run(function() {
-    numbers.pushObject(12);
-    otherNumbers.pushObject(14);
+    pushObject(numbers, 12);
+    pushObject(otherNumbers, 14);
   });
 
   deepEqual(get(obj, 'evenNumbers'), [2,4,6,12], "evenNumbers is updated");
@@ -435,7 +440,7 @@ QUnit.test("dependent arrays can use `replace` with a negative index to remove i
     computed: arrayComputed('dependentArray', {
       addedItem(acc, item) { return acc; },
       removedItem(acc, item) {
-        acc.pushObject(item);
+        pushObject(acc, item);
         return acc;
       }
     })
@@ -480,7 +485,7 @@ QUnit.test("dependent arrays that call `replace` with a too-large removedCount a
     computed: arrayComputed('dependentArray', {
       addedItem(acc, item) { return acc; },
       removedItem(acc, item) {
-        acc.pushObject(item);
+        pushObject(acc, item);
         return acc;
       }
     })
@@ -539,7 +544,7 @@ QUnit.module('arrayComputed - recomputation DKs', {
 
       titles: arrayComputed('people', {
         addedItem(acc, person) {
-          acc.pushObject(get(person, 'title'));
+          pushObject(acc, get(person, 'title'));
           return acc;
         }
       })
@@ -622,7 +627,7 @@ QUnit.test("@this can be used to treat the object as the array itself", function
   deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
 
   run(function() {
-    obj.pushObject({ name: 'd' });
+    pushObject(obj, { name: 'd' });
   });
 
   deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
@@ -664,12 +669,12 @@ QUnit.test("changeMeta includes item and index", function() {
 
   // add2
   run(function() {
-    items.pushObject(EmberObject.create({ n: 'two' }));
+    pushObject(items, EmberObject.create({ n: 'two' }));
   });
 
   // remove2
   run(function() {
-    items.popObject();
+    popObject(items);
   });
 
   // remove0 add0
@@ -683,8 +688,8 @@ QUnit.test("changeMeta includes item and index", function() {
   // [zero', one] -> [zero', one, five, six]
   // add2 add3
   run(function() {
-    items.pushObject(EmberObject.create({ n: 'five' }));
-    items.pushObject(EmberObject.create({ n: 'six' }));
+    pushObject(items, EmberObject.create({ n: 'five' }));
+    pushObject(items, EmberObject.create({ n: 'six' }));
   });
 
   // remove0 add0
@@ -747,8 +752,8 @@ QUnit.test("changeMeta includes changedCount and arrayChanged", function() {
   var letters = get(obj, 'letters');
 
   obj.get('lettersArrayComputed');
-  letters.pushObject('c');
-  letters.popObject();
+  pushObject(letters, 'c');
+  popObject(letters);
   replace(letters, 0, 1, ['d']);
   removeAt(letters, 0, letters.length);
 
@@ -781,7 +786,7 @@ QUnit.test("`updateIndexes` is not over-eager about skipping retain:n (#4620)", 
   deepEqual(tracked, ["+one@0", "+two@1"], "precond - array is set up correctly");
 
   run(function () {
-    obj.get('content').shiftObject();
+    shiftObject(obj.get('content'));
   });
 
   deepEqual(tracked, ["+one@0", "+two@1", "-one@0"], "array handles unshift correctly");
@@ -827,11 +832,11 @@ QUnit.test("when initialValue is undefined, everything works as advertised", fun
   });
   equal(get(chars, 'firstUpper'), undefined, "initialValue is undefined");
 
-  get(chars, 'letters').pushObjects(['a', 'b', 'c']);
+  pushObjects(get(chars, 'letters'), ['a', 'b', 'c']);
 
   equal(get(chars, 'firstUpper'), undefined, "result is undefined when no matches are present");
 
-  get(chars, 'letters').pushObjects(['A', 'B', 'C']);
+  pushObjects(get(chars, 'letters'), ['A', 'B', 'C']);
 
   equal(get(chars, 'firstUpper'), 'A', "result is the first match when matching objects are present");
 
@@ -871,7 +876,7 @@ QUnit.test("non-array dependencies completely invalidate a reduceComputed CP", f
   equal(addCalls, 0, "precond - add has not initially been called");
   equal(removeCalls, 0, "precond - remove has not initially been called");
 
-  dependentArray.pushObjects([1, 2]);
+  pushObjects(dependentArray, [1, 2]);
 
   equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
   equal(removeCalls, 0, "remove not called");
@@ -912,13 +917,13 @@ QUnit.test("array dependencies specified with `.[]` completely invalidate a redu
   equal(addCalls, 0, "precond - add has not initially been called");
   equal(removeCalls, 0, "precond - remove has not initially been called");
 
-  dependentArray.pushObjects([1, 2]);
+  pushObjects(dependentArray, [1, 2]);
 
   equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
   equal(removeCalls, 0, "remove not called");
 
   run(function() {
-    totallyInvalidatingDependentArray.pushObject(3);
+    pushObject(totallyInvalidatingDependentArray, 3);
   });
 
   equal(addCalls, 4, "array completely recomputed when totally invalidating dependent array modified");
@@ -955,15 +960,15 @@ QUnit.test("returning undefined in addedItem/removedItem completely invalidates 
   equal(get(obj, 'computed'), 1);
   equal(counter, 0);
 
-  dependentArray.pushObject(10);
+  pushObject(dependentArray, 10);
   equal(get(obj, 'computed'), 1);
   equal(counter, 0);
 
-  dependentArray.removeObject(10);
+  removeObject(dependentArray, 10);
   equal(get(obj, 'computed'), 1);
   equal(counter, 0);
 
-  dependentArray.removeObject(1);
+  removeObject(dependentArray, 1);
   equal(get(obj, 'computed'), 2);
   equal(counter, 1);
 });

@@ -23,7 +23,10 @@ import compare from 'ember-runtime/compare';
 import {
   objectAt,
   insertAt,
-  removeAt
+  removeAt,
+  addObject,
+  removeObject,
+  pushObject
 } from 'ember-runtime/mixins/array';
 
 var a_slice = [].slice;
@@ -404,7 +407,7 @@ export function uniq() {
 
       if (!instanceMeta.itemCounts[guid]) {
         instanceMeta.itemCounts[guid] = 1;
-        array.pushObject(item);
+        pushObject(array, item);
       } else {
         ++instanceMeta.itemCounts[guid];
       }
@@ -416,7 +419,7 @@ export function uniq() {
       var itemCounts = instanceMeta.itemCounts;
 
       if (--itemCounts[guid] === 0) {
-        array.removeObject(item);
+        removeObject(array, item);
       }
 
       return array;
@@ -483,7 +486,7 @@ export function intersect() {
 
       if (++itemCounts[itemGuid][dependentGuid] === 1 &&
           numberOfDependentArrays === keys(itemCounts[itemGuid]).length) {
-        array.addObject(item);
+        addObject(array, item);
       }
 
       return array;
@@ -507,7 +510,7 @@ export function intersect() {
           delete itemCounts[itemGuid];
         }
 
-        array.removeObject(item);
+        removeObject(array, item);
       }
 
       return array;
@@ -560,10 +563,10 @@ export function setDiff(setAProperty, setBProperty) {
 
       if (changeMeta.arrayChanged === setA) {
         if (!setB.contains(item)) {
-          array.addObject(item);
+          addObject(array, item);
         }
       } else {
-        array.removeObject(item);
+        removeObject(array, item);
       }
 
       return array;
@@ -575,10 +578,10 @@ export function setDiff(setAProperty, setBProperty) {
 
       if (changeMeta.arrayChanged === setB) {
         if (setA.contains(item)) {
-          array.addObject(item);
+          addObject(array, item);
         }
       } else {
-        array.removeObject(item);
+        removeObject(array, item);
       }
 
       return array;
@@ -730,7 +733,7 @@ function customSort(itemsKey, comparator) {
     },
 
     removedItem(array, item, changeMeta, instanceMeta) {
-      array.removeObject(item);
+      removeObject(array, item);
       return array;
     },
 

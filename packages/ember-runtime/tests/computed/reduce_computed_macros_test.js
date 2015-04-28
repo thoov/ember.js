@@ -29,7 +29,11 @@ import {
 } from 'ember-runtime/computed/reduce_computed_macros';
 import {
   objectAt,
-  removeAt
+  removeAt,
+  addObject,
+  removeObject,
+  pushObject,
+  popObject
 } from 'ember-runtime/mixins/array';
 
 
@@ -88,7 +92,7 @@ QUnit.test("it caches properly", function() {
   equal(userFnCalls, 4, "precond - mapper called expected number of times");
 
   run(function() {
-    array.addObject({ v: 7 });
+    addObject(array, { v: 7 });
   });
 
   equal(userFnCalls, 5, "precond - mapper called expected number of times");
@@ -114,7 +118,7 @@ QUnit.test("it maps simple unshifted properties", function() {
     array.unshiftObject('b');
     array.unshiftObject('a');
 
-    array.popObject();
+    popObject(array);
   });
 
   deepEqual(get(obj, 'mapped'), ['A', 'B'], "properties unshifted in sequence are mapped correctly");
@@ -295,7 +299,7 @@ QUnit.test("it caches properly", function() {
   equal(userFnCalls, 8, "precond - filter called expected number of times");
 
   run(function() {
-    array.addObject(11);
+    addObject(array, 11);
   });
 
   equal(userFnCalls, 9, "precond - filter called expected number of times");
@@ -312,18 +316,18 @@ QUnit.test("it updates as the array is modified", function() {
   deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
 
   run(function() {
-    array.addObject(11);
+    addObject(array, 11);
   });
   deepEqual(filtered, [2,4,6,8], "objects not passing the filter are not added");
 
   run(function() {
-    array.addObject(12);
+    addObject(array, 12);
   });
   deepEqual(filtered, [2,4,6,8,12], "objects passing the filter are added");
 
   run(function() {
-    array.removeObject(3);
-    array.removeObject(4);
+    removeObject(array, 3);
+    removeObject(array, 4);
   });
   deepEqual(filtered, [2,6,8,12], "objects removed from the dependent array are removed from the computed array");
 });
@@ -336,14 +340,14 @@ QUnit.test("the dependent array can be cleared one at a time", function() {
 
   run(function() {
     // clear 1-8 but in a random order
-    array.removeObject(3);
-    array.removeObject(1);
-    array.removeObject(2);
-    array.removeObject(4);
-    array.removeObject(8);
-    array.removeObject(6);
-    array.removeObject(5);
-    array.removeObject(7);
+    removeObject(array, 3);
+    removeObject(array, 1);
+    removeObject(array, 2);
+    removeObject(array, 4);
+    removeObject(array, 8);
+    removeObject(array, 6);
+    removeObject(array, 5);
+    removeObject(array, 7);
   });
 
   deepEqual(filtered, [], "filtered array cleared correctly");
@@ -414,13 +418,13 @@ QUnit.test("properties can be filtered by truthiness", function() {
   deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to property changes");
 
   run(function() {
-    array.pushObject({ name: "five", a: 6, b: true });
+    pushObject(array, { name: "five", a: 6, b: true });
   });
   deepEqual(as.mapBy('name'), ['two', 'three', 'four', 'five'], "arrays computed by filter property respond to added objects");
   deepEqual(bs.mapBy('name'), ['one', 'three', 'five'], "arrays computed by filtered property respond to added objects");
 
   run(function() {
-    array.popObject();
+    popObject(array);
   });
   deepEqual(as.mapBy('name'), ['two', 'three', 'four'], "arrays computed by filter property respond to removed objects");
   deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to removed objects");
@@ -439,12 +443,12 @@ QUnit.test("properties can be filtered by values", function() {
   deepEqual(a1s.mapBy('name'), ['one', 'three'], "properties can be filtered by matching value");
 
   run(function() {
-    array.pushObject({ name: "five", a: 1 });
+    pushObject(array, { name: "five", a: 1 });
   });
   deepEqual(a1s.mapBy('name'), ['one', 'three', 'five'], "arrays computed by matching value respond to added objects");
 
   run(function() {
-    array.popObject();
+    popObject(array);
   });
   deepEqual(a1s.mapBy('name'), ['one', 'three'], "arrays computed by matching value respond to removed objects");
 
@@ -505,13 +509,13 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " does not include duplicates");
 
     run(function() {
-      array.pushObject(8);
+      pushObject(array, 8);
     });
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " does not add existing items");
 
     run(function() {
-      array.pushObject(11);
+      pushObject(array, 11);
     });
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + " adds new items");
@@ -523,7 +527,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10,11], alias + " does not remove items that are still in the dependent array");
 
     run(function() {
-      array2.removeObject(7);
+      removeObject(array2, 7);
     });
 
     deepEqual(union, [1,2,3,4,5,6,8,9,10,11], alias + " removes items when their last instance is gone");
@@ -538,7 +542,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " is initially correct");
 
     run(function() {
-      array.removeObject(6);
+      removeObject(array, 6);
     });
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], "objects are not removed if they exist in other dependent arrays");
@@ -609,12 +613,12 @@ QUnit.test("it has set-intersection semantics", function() {
   deepEqual(intersection, [5], "objects are removed once they are gone from all dependent arrays");
 
   run(function() {
-    array2.pushObject(1);
+    pushObject(array2, 1);
   });
   deepEqual(intersection, [5], "objects are not added as long as they are missing from any dependent array");
 
   run(function() {
-    array3.pushObject(1);
+    pushObject(array3, 1);
   });
   deepEqual(intersection, [5,1], "objects added once they belong to all dependent arrays");
 });
@@ -665,7 +669,7 @@ QUnit.test("it has set-diff semantics", function() {
   deepEqual(diff, [1, 2, 6, 7], "set-diff is initially correct");
 
   run(function() {
-    array2.popObject();
+    popObject(array2);
   });
   deepEqual(diff, [1,2,6,7], "removing objects from the remove set has no effect if the object is not in the keep set");
 
@@ -675,17 +679,17 @@ QUnit.test("it has set-diff semantics", function() {
   deepEqual(diff, [1, 2, 6, 7, 3], "removing objects from the remove set adds them if they're in the keep set");
 
   run(function() {
-    array1.removeObject(3);
+    removeObject(array1, 3);
   });
   deepEqual(diff, [1, 2, 6, 7], "removing objects from the keep array removes them from the computed array");
 
   run(function() {
-    array1.pushObject(5);
+    pushObject(array1, 5);
   });
   deepEqual(diff, [1, 2, 6, 7], "objects added to the keep array that are in the remove array are not added to the computed array");
 
   run(function() {
-    array1.pushObject(22);
+    pushObject(array1, 22);
   });
   deepEqual(diff, [1, 2, 6, 7, 22], "objects added to the keep array not in the remove array are added to the computed array");
 });
@@ -731,7 +735,7 @@ function commonSortTests() {
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     run(function() {
-      items.pushObject({ fname: 'Tyrion', lname: 'Lannister' });
+      pushObject(items, { fname: 'Tyrion', lname: 'Lannister' });
     });
 
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'], "Adding to the dependent array updates the sorted array");
@@ -746,7 +750,7 @@ function commonSortTests() {
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     run(function() {
-      items.popObject();
+      popObject(items);
     });
 
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb'], "Removing from the dependent array updates the sorted array");
@@ -802,13 +806,13 @@ function commonSortTests() {
 
     run(function() {
       sorted = get(obj, 'sortedItems');
-      items.pushObject(tyrion);
+      pushObject(items, tyrion);
     });
 
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
 
     run(function() {
-      items.pushObject(tyrionInDisguise);
+      pushObject(items, tyrionInDisguise);
     });
 
     deepEqual(sorted.mapBy('fname'), ['Yollo', 'Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
@@ -867,7 +871,7 @@ QUnit.test("updating sort properties in place updates the sorted array", functio
 
   run(function() {
     sortProps.clear();
-    sortProps.pushObject('fname');
+    pushObject(sortProps, 'fname');
   });
 
   deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "after updating sort properties array is updated");
@@ -1016,7 +1020,7 @@ QUnit.test("array observers do not leak", function() {
 
   run(function() {
     try {
-      sortProps.pushObject({
+      pushObject(sortProps, {
         name: 'Anna'
       });
       ok(true);
@@ -1294,13 +1298,13 @@ QUnit.test("max tracks the max number as objects are added", function() {
   });
 
   run(function() {
-    items.pushObject(5);
+    pushObject(items, 5);
   });
 
   equal(get(obj, 'max'), 5, "max updates when a larger number is added");
 
   run(function() {
-    items.pushObject(2);
+    pushObject(items, 2);
   });
 
   equal(get(obj, 'max'), 5, "max does not update when a smaller number is added");
@@ -1311,13 +1315,13 @@ QUnit.test("max recomputes when the current max is removed", function() {
 
   run(function() {
     items = get(obj, 'items');
-    items.removeObject(2);
+    removeObject(items, 2);
   });
 
   equal(get(obj, 'max'), 3, "max is unchanged when a non-max item is removed");
 
   run(function() {
-    items.removeObject(3);
+    removeObject(items, 3);
   });
 
   equal(get(obj, 'max'), 1, "max is recomputed when the current max is removed");
@@ -1347,13 +1351,13 @@ QUnit.test("min tracks the min number as objects are added", function() {
   });
 
   run(function() {
-    items.pushObject(-2);
+    pushObject(items, -2);
   });
 
   equal(get(obj, 'min'), -2, "min updates when a smaller number is added");
 
   run(function() {
-    items.pushObject(2);
+    pushObject(items, 2);
   });
 
   equal(get(obj, 'min'), -2, "min does not update when a larger number is added");
@@ -1364,13 +1368,13 @@ QUnit.test("min recomputes when the current min is removed", function() {
 
   run(function() {
     items = get(obj, 'items');
-    items.removeObject(2);
+    removeObject(items, 2);
   });
 
   equal(get(obj, 'min'), 1, "min is unchanged when a non-min item is removed");
 
   run(function() {
-    items.removeObject(1);
+    removeObject(items, 1);
   });
 
   equal(get(obj, 'min'), 3, "min is recomputed when the current min is removed");
@@ -1417,9 +1421,9 @@ QUnit.test("filtering and sorting can be combined", function() {
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime'], "precond - array is initially filtered and sorted");
 
   run(function() {
-    items.pushObject({ fname: 'Tywin',   lname: 'Lannister' });
-    items.pushObject({ fname: 'Lyanna',  lname: 'Stark' });
-    items.pushObject({ fname: 'Gerion',  lname: 'Lannister' });
+    pushObject(items, { fname: 'Tywin',   lname: 'Lannister' });
+    pushObject(items, { fname: 'Lyanna',  lname: 'Stark' });
+    pushObject(items, { fname: 'Gerion',  lname: 'Lannister' });
   });
 
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], "updates propagate to array");
@@ -1433,13 +1437,13 @@ QUnit.test("filtering, sorting and reduce (max) can be combined", function() {
   equal(16, get(obj, 'oldestStarkAge'), "precond - end of chain is initially correct");
 
   run(function() {
-    items.pushObject({ fname: 'Rickon', lname: 'Stark', age: 5 });
+    pushObject(items, { fname: 'Rickon', lname: 'Stark', age: 5 });
   });
 
   equal(16, get(obj, 'oldestStarkAge'), "chain is updated correctly");
 
   run(function() {
-    items.pushObject({ fname: 'Eddard', lname: 'Stark', age: 35 });
+    pushObject(items, { fname: 'Eddard', lname: 'Stark', age: 35 });
   });
 
   equal(35, get(obj, 'oldestStarkAge'), "chain is updated correctly");
@@ -1540,7 +1544,7 @@ QUnit.test("it computes interdependent array computed properties", function() {
   });
 
   run(function() {
-    obj.get('array').pushObject({ v: 5 });
+    pushObject(obj.get('array'), { v: 5 });
   });
 
   equal(get(obj, 'max'), 5, 'maximum value is updated correctly');
@@ -1575,13 +1579,13 @@ QUnit.test('updates when array is modified', function() {
   };
 
   run(function() {
-    get(obj, 'array').pushObject(1);
+    pushObject(get(obj, 'array'), 1);
   });
 
   equal(sum(), 7, 'recomputed when elements are added');
 
   run(function() {
-    get(obj, 'array').popObject();
+    popObject(get(obj, 'array'));
   });
 
   equal(sum(), 6, 'recomputes when elements are removed');

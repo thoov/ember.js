@@ -9,7 +9,9 @@ import { ArrayTests } from "ember-runtime/tests/suites/array";
 import EmberObject from "ember-runtime/system/object";
 import EmberArray, {
   addArrayObserver,
-  objectAt
+  objectAt,
+  addObject,
+  pushObject
 } from "ember-runtime/mixins/array";
 
 /*
@@ -61,7 +63,7 @@ ArrayTests.extend({
 
   // allows for testing of the basic enumerable after an internal mutation
   mutate(obj) {
-    obj.addObject(this.getFixture(1)[0]);
+    addObject(obj, this.getFixture(1)[0]);
   },
 
   toArray(obj) {
@@ -345,7 +347,7 @@ QUnit.test('adding an object should notify (@each)', function() {
   // get(ary, '@each');
   addObserver(ary, '@each', observerObject, 'wasCalled');
 
-  ary.addObject(EmberObject.create({
+  addObject(ary, EmberObject.create({
     desc: "foo",
     isDone: false
   }));
@@ -366,7 +368,7 @@ QUnit.test('adding an object should notify (@each.isDone)', function() {
 
   addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
-  ary.addObject(EmberObject.create({
+  addObject(ary, EmberObject.create({
     desc: "foo",
     isDone: false
   }));
@@ -394,7 +396,7 @@ QUnit.test('using @each to observe arrays that does not return objects raise err
   addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
   expectAssertion(function() {
-    ary.addObject(EmberObject.create({
+    addObject(ary, EmberObject.create({
       desc: "foo",
       isDone: false
     }));
@@ -432,7 +434,7 @@ testBoth("should be clear caches for computed properties that have dependent key
     })
   });
 
-  get(obj, 'resources').pushObject(EmberObject.create({ common: "HI!" }));
+  pushObject(get(obj, 'resources'), EmberObject.create({ common: "HI!" }));
   equal("HI!", get(obj, 'common'));
 
   set(objectAt(get(obj, 'resources'), 0), 'common', "BYE!");

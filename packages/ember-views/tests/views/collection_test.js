@@ -11,7 +11,14 @@ import jQuery from "ember-views/system/jquery";
 import CollectionView from "ember-views/views/collection_view";
 import View from "ember-views/views/view";
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
-import { insertAt, removeAt } from "ember-runtime/mixins/array";
+import {
+  insertAt,
+  removeAt,
+  popObject,
+  shiftObject,
+  pushObject,
+  unshiftObject
+} from "ember-runtime/mixins/array";
 
 var trim = jQuery.trim;
 var view;
@@ -237,7 +244,7 @@ QUnit.test("can add and replace in the same runloop", function() {
   });
 
   run(function() {
-    content.pushObject("Tom Dale");
+    pushObject(content, "Tom Dale");
     removeAt(content, 0);
     insertAt(content, 0, "Kazuki");
   });
@@ -269,7 +276,7 @@ QUnit.test("can add and replace the object before the add in the same runloop", 
   });
 
   run(function() {
-    content.pushObject("Tom Dale");
+    pushObject(content, "Tom Dale");
     removeAt(content, 1);
     insertAt(content, 1, "Kazuki");
   });
@@ -300,11 +307,11 @@ QUnit.test("can add and replace complicatedly", function() {
   });
 
   run(function() {
-    content.pushObject("Tom Dale");
+    pushObject(content, "Tom Dale");
     removeAt(content, 1);
     insertAt(content, 1, "Kazuki");
-    content.pushObject("Firestone");
-    content.pushObject("McMunch");
+    pushObject(content, "Firestone");
+    pushObject(content, "McMunch");
   });
 
   forEach(content, function(item, idx) {
@@ -333,11 +340,11 @@ QUnit.test("can add and replace complicatedly harder", function() {
   });
 
   run(function() {
-    content.pushObject("Tom Dale");
+    pushObject(content, "Tom Dale");
     removeAt(content, 1);
     insertAt(content, 1, "Kazuki");
-    content.pushObject("Firestone");
-    content.pushObject("McMunch");
+    pushObject(content, "Firestone");
+    pushObject(content, "McMunch");
     removeAt(content, 2);
   });
 
@@ -402,8 +409,8 @@ QUnit.test("should fire life cycle events when elements are added and removed", 
   equal(view.$().text(), '123');
 
   run(function () {
-    content.pushObject(4);
-    content.unshiftObject(0);
+    pushObject(content, 4);
+    unshiftObject(content, 0);
   });
 
 
@@ -415,8 +422,8 @@ QUnit.test("should fire life cycle events when elements are added and removed", 
   equal(trim(view.$().text()), '01234');
 
   run(function () {
-    content.popObject();
-    content.shiftObject();
+    popObject(content);
+    shiftObject(content);
   });
 
   equal(didInsertElement, 5);
@@ -528,8 +535,8 @@ QUnit.test("should not render the emptyView if content is emptied and refilled i
   equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
 
   run(function() {
-    view.get('content').popObject();
-    view.get('content').pushObject(['NEWS GUVNAH']);
+    popObject(view.get('content'));
+    pushObject(view.get('content'), ['NEWS GUVNAH']);
   });
   equal(view.$('div').length, 1);
   equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
@@ -589,7 +596,6 @@ QUnit.test("when a collection view is emptied, deeply nested views elements are 
     content: Ember.A([1]),
     itemViewClass: ChildView
   });
-
 
   run(function() {
     view.append();

@@ -2,7 +2,15 @@ import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
-import { objectAt } from "ember-runtime/mixins/array";
+import {
+  objectAt,
+  addObject,
+  insertAt,
+  pushObject,
+  removeAt,
+  removeObject,
+  replace
+} from "ember-runtime/mixins/array";
 
 var array;
 
@@ -30,11 +38,11 @@ QUnit.module("ArrayProxy - arrangedContent", {
 });
 
 QUnit.test("addObject - adds to end of 'content' if not present", function() {
-  run(function() { array.addObject(3); });
+  run(function() { addObject(array, 3); });
   deepEqual(array.get('content'), [1,2,4,5,3], 'adds to end of content');
   deepEqual(array.get('arrangedContent'), [5,4,3,2,1], 'arrangedContent stays sorted');
 
-  run(function() { array.addObject(1); });
+  run(function() { addObject(array, 1); });
   deepEqual(array.get('content'), [1,2,4,5,3], 'does not add existing number to content');
 });
 
@@ -55,12 +63,12 @@ QUnit.test("indexOf - returns index of object in arrangedContent", function() {
 
 QUnit.test("insertAt - raises, indeterminate behavior", function() {
   throws(() => {
-    run(() => array.insertAt(2, 3));
+    run(() => insertAt(array, 2, 3));
   });
 });
 
 QUnit.test("lastIndexOf - returns last index of object in arrangedContent", function() {
-  run(function() { array.pushObject(4); });
+  run(function() { pushObject(array, 4); });
   equal(array.lastIndexOf(4), 2, 'returns last arranged index');
 });
 
@@ -89,7 +97,7 @@ QUnit.test("popObject - removes last object in arrangedContent", function() {
 });
 
 QUnit.test("pushObject - adds to end of content even if it already exists", function() {
-  run(function() { array.pushObject(1); });
+  run(function() { pushObject(array, 1); });
   deepEqual(array.get('content'), [1,2,4,5,1], 'adds to end of content');
 });
 
@@ -99,12 +107,12 @@ QUnit.test("pushObjects - adds multiple to end of content even if it already exi
 });
 
 QUnit.test("removeAt - removes from index in arrangedContent", function() {
-  run(function() { array.removeAt(1, 2); });
+  run(function() { removeAt(array, 1, 2); });
   deepEqual(array.get('content'), [1,5]);
 });
 
 QUnit.test("removeObject - removes object from content", function() {
-  run(function() { array.removeObject(2); });
+  run(function() { removeObject(array, 2); });
   deepEqual(array.get('content'), [1,4,5]);
 });
 
@@ -115,7 +123,7 @@ QUnit.test("removeObjects - removes objects from content", function() {
 
 QUnit.test("replace - raises, indeterminate behavior", function() {
   throws(function() {
-    run(function() { array.replace(1, 2, [3]); });
+    run(function() { replace(array, 1, 2, [3]); });
   });
 });
 
@@ -189,7 +197,7 @@ QUnit.module("ArrayProxy - arrangedContent matching content", {
 });
 
 QUnit.test("insertAt - inserts object at specified index", function() {
-  run(function() { array.insertAt(2, 3); });
+  run(function() { insertAt(array, 2, 3); });
   deepEqual(array.get('content'), [1,2,3,4,5]);
 });
 
@@ -266,7 +274,7 @@ QUnit.test("popObject - removes last object in arrangedContent", function() {
 });
 
 QUnit.test("removeObject - removes object from content", function() {
-  run(function() { array.removeObject('2'); });
+  run(function() { removeObject(array, '2'); });
   deepEqual(array.get('content'), [1,4,5]);
 });
 
